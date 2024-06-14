@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group button {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .form-group button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+        .block {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+        .block h4 {
+            margin: 0 0 5px 0;
+        }
+        h1, h2 {
+            color: #007BFF;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>User Information</h1>
+        <div class="form-group">
+            <button onclick="logout()">Logout</button>
+        </div>
+        <h2>Profile</h2>
+        <div id="profile"></div>
+        <h2>Balance</h2>
+        <div id="balance"></div>
+        <h2>Transactions</h2>
+        <div id="transactions"></div>
+    </div>
+
+    <script>
+        async function logout() {
+            await fetch('/logout', { method: 'POST' });
+            window.location.href = '/';
+        }
+
+        async function fetchUserDetails() {
+            const response = await fetch('/user-details');
+            const user = await response.json();
+            const profileDiv = document.getElementById('profile');
+            profileDiv.innerHTML = `
+                <p><strong>Username:</strong> ${user.username}</p>
+                <p><strong>Wallet Public Key:</strong> ${user.walletPublicKey}</p>
+                <p><strong>RSA Public Key:</strong> ${user.rsaPublicKey}</p>
+                <p><strong>Balance:</strong> ${user.balance}</p>
+            `;
+        }
+
+        async function fetchBalance() {
+            const response = await fetch('/balance');
+            const { balance } = await response.json();
+            const balanceDiv = document.getElementById('balance');
+            balanceDiv.innerHTML = `Balance: ${balance}`;
+        }
+
+        async function fetchTransactions() {
+            const response = await fetch('/transactions');
+            const { transactions } = await response.json();
+            const transactionsDiv = document.getElementById('transactions');
+            transactionsDiv.innerHTML = '';
+            transactions.forEach(tx => {
+                const txDiv = document.createElement('div');
+                txDiv.className = 'block';
+                txDiv.innerHTML = `
+                    <p><strong>From:</strong> ${tx.fromAddress}</p>
+                    <p><strong>To:</strong> ${tx.toAddress}</p>
+                    <p><strong>Amount:</strong> ${tx.amount}</p>
+                `;
+                transactionsDiv.appendChild(txDiv);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchUserDetails();
+            fetchBalance();
+            fetchTransactions();
+        });
+    </script>
+</body>
+</html>
